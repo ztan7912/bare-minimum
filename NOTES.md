@@ -334,4 +334,9 @@ Implemented on 2026-05-25:
 
 Remaining considerations:
 - Smoke verification is safer because deployments are serialized, but it still relies on queue item timing rather than a unique run id. A unique reference/run id would require changing the function contract or queue payload.
+- Release automation roadmap:
+  - Current posture is `push to main -> CI`, then manual workflow dispatch for deployment.
+  - A good next step is tag/release-gated CD: `push to main -> CI`, then `create GitHub release/tag vX.Y.Z -> deploy`.
+  - Another option is environment promotion: `push to main -> deploy to dev`, then manual approval before prod.
+  - Manual deployment remains the conservative default because the deploy workflow updates a real UiPath process and runs a smoke job with side effects.
 - `NOTES.md` intentionally keeps historical tenant/folder/process/job IDs for private project traceability. Sanitize before making the repo public.

@@ -136,3 +136,26 @@ Add these repository secrets:
 - `UIPATH_SCOPE`: optional, use `OR.Default`
 
 Before a deployment, bump `pyproject.toml` version so the package version is new. Then run **Actions > Deploy UiPath Python Function > Run workflow**. Use the `allow_existing_package` checkbox only when you intentionally want to smoke-test the currently deployed artifact without uploading a new package.
+
+Current release posture:
+
+```text
+push to main -> CI
+manual workflow dispatch -> deploy
+```
+
+This keeps every push tested without automatically changing the UiPath Cloud tenant. A good future evolution is semi-automatic CD, where a deliberate release signal triggers deployment:
+
+```text
+push to main -> CI
+create GitHub release/tag vX.Y.Z -> deploy
+```
+
+Another future option is environment promotion:
+
+```text
+push to main -> deploy to dev
+manual approval -> deploy to prod
+```
+
+For now, manual deployment is the conservative default because it updates a real UiPath process and runs a smoke job with side effects.
