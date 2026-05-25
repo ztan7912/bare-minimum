@@ -11,6 +11,9 @@ __pycache__/
 
 .uipath/
 
+# Local AI assistant context. These files are intentionally ignored so
+# generated or personal context is not staged accidentally; UiPath package
+# exclusions are handled separately in uipath.json.
 .agent/
 .agents/
 .claude/
@@ -19,4 +22,3 @@ AGENTS.md
 CLAUDE.md
 
 *.mermaid
-

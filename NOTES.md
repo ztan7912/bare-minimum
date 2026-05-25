@@ -340,3 +340,16 @@ Remaining considerations:
   - Another option is environment promotion: `push to main -> deploy to dev`, then manual approval before prod.
   - Manual deployment remains the conservative default because the deploy workflow updates a real UiPath process and runs a smoke job with side effects.
 - `NOTES.md` intentionally keeps historical tenant/folder/process/job IDs for private project traceability. Sanitize before making the repo public.
+
+### Follow-Up Review Remediation
+
+Implemented after Claude Code follow-up:
+- Added `main.as_queue_item_data()` so `main.py` handles both the current SDK behavior (`create_item()` returns parsed JSON) and a response-like object with `.json()`.
+- Added tests for response-like SDK results and unexpected SDK return types.
+- Added `Orchestrator.__enter__()` and `Orchestrator.__exit__()` so deployment helper usage can be safely wrapped in `with`.
+- Added `--old-package-version` for the old-package cleanup path. It defaults to the new package version for the package-rename case, but can now target a different old version explicitly.
+- Added `.gitignore` comments explaining that local AI assistant context is ignored to prevent accidental staging.
+
+Follow-up items intentionally not accepted as stated:
+- The installed SDK source currently returns `response.json()` from `queues.create_item()`, despite its `Response` annotation. The production behavior seen in this environment is parsed JSON, not a raw `httpx.Response`; the code is now defensive either way.
+- The ignored AI context files are not tracked in this repo. The `.gitignore` concern was handled with comments rather than removing the ignore rules.

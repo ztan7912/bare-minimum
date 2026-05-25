@@ -66,6 +66,12 @@ class Orchestrator:
     def close(self) -> None:
         self.client.close()
 
+    def __enter__(self) -> "Orchestrator":
+        return self
+
+    def __exit__(self, *exc_info: object) -> None:
+        self.close()
+
     def request(
         self,
         method: str,
@@ -626,15 +632,19 @@ def main() -> None:
     parser.add_argument("--delete-old-package", action="store_true")
     parser.add_argument("--replace-process-on-package-rename", action="store_true")
     parser.add_argument("--old-package-name")
+    parser.add_argument("--old-package-version")
     args = parser.parse_args()
 
     package_name, package_version = read_project()
+    old_package_version = args.old_package_version or package_version
     if args.package is None:
         args.package = pathlib.Path(".uipath") / f"{package_name}.{package_version}.nupkg"
     if not args.package.exists():
         fail(f"package not found: {args.package}")
     if args.delete_old_package and not args.old_package_name:
         fail("--old-package-name is required with --delete-old-package")
+    if args.old_package_version and not args.old_package_name:
+        fail("--old-package-name is required with --old-package-version")
 
     orchestrator = Orchestrator()
     try:
@@ -765,20 +775,23 @@ def main() -> None:
                     f"old package is still referenced by process(es): {details}"
                 )
             orchestrator.assert_package_version_inactive(
-                args.old_package_name, package_version, feed_id
+                args.old_package_name, old_package_version, feed_id
             )
             if orchestrator.package_version_exists(
-                args.old_package_name, package_version, feed_id
+                args.old_package_name, old_package_version, feed_id
             ):
                 orchestrator.delete_package_version(
-                    args.old_package_name, package_version, feed_id
+                    args.old_package_name, old_package_version, feed_id
                 )
                 old_package_deleted = True
             if orchestrator.package_version_exists(
-                args.old_package_name, package_version, feed_id
+                args.old_package_name, old_package_version, feed_id
             ):
-                fail(f"old package still exists after delete: {args.old_package_name}")
-            print(f"OK: old package {args.old_package_name} is absent")
+                fail(
+                    "old package still exists after delete: "
+                    f"{args.old_package_name} {old_package_version}"
+                )
+            print(f"OK: old package {args.old_package_name} {old_package_version} is absent")
 
         args.state_path.parent.mkdir(exist_ok=True)
         args.state_path.write_text(
@@ -803,6 +816,9 @@ def main() -> None:
                         else None
                     ),
                     "oldPackageName": args.old_package_name,
+                    "oldPackageVersion": (
+                        old_package_version if args.old_package_name else None
+                    ),
                     "oldPackageDeleted": old_package_deleted,
                 },
                 indent=2,

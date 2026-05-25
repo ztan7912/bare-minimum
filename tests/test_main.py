@@ -5,6 +5,13 @@ import main
 
 
 class MainTests(unittest.TestCase):
+    class ResponseLike:
+        def __init__(self, data):
+            self.data = data
+
+        def json(self):
+            return self.data
+
     def test_main_delegates_to_queue_item_creation(self):
         with patch.object(
             main, "add_time_added_queue_item", return_value={"Id": 123}
@@ -27,6 +34,20 @@ class MainTests(unittest.TestCase):
             queue_name="Test_Queue",
             folder_path="Shared/UiPath",
         )
+
+    def test_add_time_added_queue_item_accepts_response_like_sdk_result(self):
+        sdk = Mock()
+        sdk.queues.create_item.return_value = self.ResponseLike(
+            {"Id": 456, "Status": "New"}
+        )
+
+        result = main.add_time_added_queue_item(sdk=sdk)
+
+        self.assertEqual(result, {"Id": 456, "Status": "New"})
+
+    def test_as_queue_item_data_rejects_unexpected_sdk_result(self):
+        with self.assertRaises(TypeError):
+            main.as_queue_item_data(object())
 
     def test_utc_now_text_is_utc_iso_zulu(self):
         value = main.utc_now_text()
