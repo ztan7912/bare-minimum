@@ -27,6 +27,24 @@ UIPATH_URL=https://cloud.uipath.com/<organization>/<tenant> .venv/bin/uipath aut
 
 The CLI writes local auth values to `.env`. That file is intentionally ignored by git.
 
+## Windows Git Workspace
+
+This template is intended to work well from a normal Windows checkout, which is the likely shape in customer environments. Open the project with regular Windows VS Code and let it use Windows Git.
+
+If you open the same Windows path from WSL, for example under `/mnt/c/Users/...`, Git may be able to read repository status but can run into write or locking issues around `.git` in sandboxed/WSL-mounted environments. For WSL-native development, clone the repository into the Linux filesystem instead:
+
+```bash
+mkdir -p ~/projects
+cd ~/projects
+git clone https://github.com/ztan7912/bare-minimum.git
+```
+
+Rule of thumb:
+
+- Windows/customer workstation: keep the repo on Windows and use Windows Git.
+- WSL/Codex-owned commits: use a fresh clone under `~/projects` or another WSL-native path.
+- Avoid mixing Windows Git and WSL Git heavily on one `/mnt/c` worktree.
+
 ## Build And Verify
 
 ```bash

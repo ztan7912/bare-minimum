@@ -192,3 +192,17 @@ Planned post-publish gate:
   - Updated `pyproject.toml`.
   - Updated `.uipath/studio_metadata.json`.
   - Resource import summary remained `0 total resources`.
+
+## Git Workspace Notes
+
+- This workspace lives under the Windows filesystem at `/mnt/c/Users/Zheng.Tan/Documents/Product/Python functions/bare-minimum`.
+- The Codex/WSL session initially exposed `.git` as a read-only sandbox mount, so Linux Git could not initialize or write repository metadata in place.
+- A sanitized temporary repo was used first to push the initial GitHub history to `https://github.com/ztan7912/bare-minimum.git`.
+- The underlying Windows folder was then initialized with Windows Git:
+  - Windows Git executable: `C:\Program Files\Git\cmd\git.exe`
+  - Remote: `https://github.com/ztan7912/bare-minimum.git`
+  - Branch: `main`
+- Current practical guidance:
+  - For this template and expected customer environments, keep the repo on Windows and use Windows Git/Windows VS Code.
+  - If WSL-native Git ownership is needed, clone the repo into the WSL filesystem, such as `~/projects/bare-minimum`.
+  - Avoid relying on WSL Git write operations against this exact `/mnt/c` worktree if the environment remounts `.git` read-only.
