@@ -1,0 +1,53 @@
+{
+    "$schema": "https://cloud.uipath.com/draft/2024-12/entry-point",
+    "$id": "entry-points.json",
+    "entryPoints": [
+        {
+            "filePath": "main",
+            "uniqueId": "58742f8c-ff7a-42d9-827f-f78462a3d831",
+            "type": "function",
+            "input": {},
+            "output": {
+                "type": "object"
+            },
+            "graph": {
+                "nodes": [
+                    {
+                        "id": "main.py:26",
+                        "name": "main",
+                        "type": "function",
+                        "metadata": {
+                            "file": "main.py"
+                        }
+                    },
+                    {
+                        "id": "main.py:18",
+                        "name": "add_time_added_queue_item",
+                        "type": "function",
+                        "metadata": {
+                            "file": "main.py"
+                        }
+                    },
+                    {
+                        "id": "main.py:12",
+                        "name": "utc_now_text",
+                        "type": "function",
+                        "metadata": {
+                            "file": "main.py"
+                        }
+                    }
+                ],
+                "edges": [
+                    {
+                        "source": "main.py:18",
+                        "target": "main.py:12"
+                    },
+                    {
+                        "source": "main.py:26",
+                        "target": "main.py:18"
+                    }
+                ]
+            }
+        }
+    ]
+}

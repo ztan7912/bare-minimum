@@ -1,0 +1,6 @@
+{
+  "ProjectType": "Function",
+  "Name": "BareMinimumQueueTimeAdded",
+  "Description": "Bare minimum UiPath Python function that adds the current UTC time to Test_Queue.",
+  "MainFile": null
+}

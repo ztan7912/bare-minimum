@@ -1,0 +1,25 @@
+{
+  "$schema": "https://cloud.uipath.com/draft/2024-12/uipath",
+  "runtimeOptions": {
+    "isConversational": false
+  },
+  "packOptions": {
+    "fileExtensionsIncluded": [],
+    "filesIncluded": [],
+    "filesExcluded": [
+      "AGENTS.md",
+      "CLAUDE.md",
+      "NOTES.md",
+      "main.mermaid",
+      "main.py.mermaid"
+    ],
+    "directoriesExcluded": [
+      "scripts",
+      "tests"
+    ],
+    "includeUvLock": false
+  },
+  "functions": {
+    "main": "main.py:main"
+  }
+}
