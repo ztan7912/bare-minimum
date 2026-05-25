@@ -1,5 +1,6 @@
 # Bare Minimum UiPath Python Function
 
+[![CI](https://github.com/ztan7912/bare-minimum/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/ztan7912/bare-minimum/actions/workflows/ci.yml)
 [![Deploy UiPath Python Function](https://github.com/ztan7912/bare-minimum/actions/workflows/deploy-uipath.yml/badge.svg?branch=main)](https://github.com/ztan7912/bare-minimum/actions/workflows/deploy-uipath.yml)
 
 Pure Python UiPath function that adds one item to Orchestrator queue `Test_Queue`.
@@ -17,14 +18,29 @@ The queue item contains one custom field, `TimeAdded`, with the current UTC time
 
 ```bash
 python -m venv .venv
-.venv/bin/pip install "uipath>=2.10.70" python-dotenv httpx
+.venv/bin/pip install ".[scripts]"
 cp .env.example .env
+```
+
+PowerShell:
+
+```powershell
+py -3.12 -m venv .venv
+.\.venv\Scripts\python.exe -m pip install ".[scripts]"
+Copy-Item .env.example .env
 ```
 
 Authenticate locally:
 
 ```bash
 UIPATH_URL=https://cloud.uipath.com/<organization>/<tenant> .venv/bin/uipath auth --cloud --force --tenant <tenant>
+```
+
+PowerShell:
+
+```powershell
+$env:UIPATH_URL = "https://cloud.uipath.com/<organization>/<tenant>"
+.\.venv\Scripts\uipath.exe auth --cloud --force --tenant <tenant>
 ```
 
 The CLI writes local auth values to `.env`. That file is intentionally ignored by git.
@@ -67,13 +83,12 @@ Example deployment to a target folder:
 
 ```bash
 .venv/bin/python scripts/deploy_and_verify.py \
-  --package .uipath/BareMinimumQueueTimeAdded.0.1.0.nupkg \
   --create-missing-folder \
   --create-missing-queue \
   --state-path .uipath/deploy-result.json
 ```
 
-The helper is intentionally conservative: it checks package/process collisions, verifies Orchestrator `ProcessType == Function`, starts a smoke job, and verifies a new queue item with exactly `TimeAdded`.
+The helper derives the package path from `pyproject.toml` when `--package` is omitted. It is intentionally conservative: it checks package/process collisions, verifies Orchestrator `ProcessType == Function`, starts a smoke job, and verifies a new queue item with exactly `TimeAdded`. When updating an existing process, it fails if the target package version already exists unless `--allow-existing-package` is passed.
 
 ## Credential Handling
 
@@ -106,15 +121,18 @@ Example non-interactive auth:
   --scope "$UIPATH_SCOPE"
 ```
 
-## GitHub Actions Deploy
+## GitHub Actions
 
-The repository includes `.github/workflows/deploy-uipath.yml`.
+The repository includes two workflows:
+
+- `.github/workflows/ci.yml`: runs on `push` and `pull_request` to build, verify, and test the package.
+- `.github/workflows/deploy-uipath.yml`: manual deployment and smoke test via `workflow_dispatch`.
 
 Add these repository secrets:
 
-- `UIPATH_URL`: `https://cloud.uipath.com/ZhengTanTraining/ZhengTanTraining`
+- `UIPATH_URL`: `https://cloud.uipath.com/<organization>/<tenant>`
 - `UIPATH_CLIENT_ID`: external app application/client ID
 - `UIPATH_CLIENT_SECRET`: external app secret
 - `UIPATH_SCOPE`: optional, use `OR.Default`
 
-Then run **Actions > Deploy UiPath Python Function > Run workflow**.
+Before a deployment, bump `pyproject.toml` version so the package version is new. Then run **Actions > Deploy UiPath Python Function > Run workflow**. Use the `allow_existing_package` checkbox only when you intentionally want to smoke-test the currently deployed artifact without uploading a new package.

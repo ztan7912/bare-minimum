@@ -7,9 +7,11 @@
     "fileExtensionsIncluded": [],
     "filesIncluded": [],
     "filesExcluded": [
+      ".env.example",
       "AGENTS.md",
       "CLAUDE.md",
       "NOTES.md",
+      "README.md",
       "main.mermaid",
       "main.py.mermaid"
     ],

@@ -11,10 +11,9 @@ from urllib.parse import quote
 
 import httpx
 from dotenv import load_dotenv
+from main import FOLDER_PATH, QUEUE_NAME
 
 
-FOLDER_PATH = "Shared/UiPath"
-QUEUE_NAME = "Test_Queue"
 ENTRY_POINT_PATH = "main"
 STATE_PATH = pathlib.Path(".uipath/deploy-result.json")
 
@@ -616,19 +615,22 @@ class Orchestrator:
 
 def main() -> None:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--package", required=True, type=pathlib.Path)
+    parser.add_argument("--package", type=pathlib.Path)
     parser.add_argument("--create-missing-queue", action="store_true")
     parser.add_argument("--create-missing-folder", action="store_true")
     parser.add_argument("--preflight-only", action="store_true")
     parser.add_argument("--timeout", type=int, default=300)
     parser.add_argument("--state-path", default=str(STATE_PATH), type=pathlib.Path)
     parser.add_argument("--update-existing-process", action="store_true")
+    parser.add_argument("--allow-existing-package", action="store_true")
     parser.add_argument("--delete-old-package", action="store_true")
     parser.add_argument("--replace-process-on-package-rename", action="store_true")
     parser.add_argument("--old-package-name")
     args = parser.parse_args()
 
     package_name, package_version = read_project()
+    if args.package is None:
+        args.package = pathlib.Path(".uipath") / f"{package_name}.{package_version}.nupkg"
     if not args.package.exists():
         fail(f"package not found: {args.package}")
     if args.delete_old_package and not args.old_package_name:
@@ -675,9 +677,18 @@ def main() -> None:
                     "existing process is not attached to the expected package. "
                     f"ProcessKey={current_process.get('ProcessKey')!r}"
                 )
-            if not orchestrator.package_version_exists(package_name, package_version, feed_id):
+            target_package_exists = orchestrator.package_version_exists(
+                package_name, package_version, feed_id
+            )
+            if not target_package_exists:
                 print(f"OK: new package version {package_name} {package_version} is not present yet")
             else:
+                if not args.allow_existing_package:
+                    fail(
+                        f"package version already exists: {package_name} {package_version}. "
+                        "Bump pyproject.toml version before deployment, or rerun with "
+                        "--allow-existing-package to smoke-test the already deployed artifact."
+                    )
                 print(f"OK: new package version {package_name} {package_version} already exists")
         else:
             orchestrator.assert_no_existing_package(package_name, package_version, feed_id)
@@ -688,7 +699,7 @@ def main() -> None:
             return
 
         if args.update_existing_process:
-            if not orchestrator.package_version_exists(package_name, package_version, feed_id):
+            if not target_package_exists:
                 orchestrator.upload_package(args.package, feed_id)
             else:
                 print("OK: upload skipped because package version already exists")
