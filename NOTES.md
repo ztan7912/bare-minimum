@@ -169,6 +169,28 @@ Planned post-publish gate:
   - `TimeAdded`: `2026-05-24T21:50:27.779032Z`
 - Deployment summary written to `.uipath/deploy-result-training.json`.
 
+## External App Access Model
+
+- The GitHub Actions deployment should use a confidential UiPath External Application, with `UIPATH_SCOPE=OR.Default` requested at token time.
+- Package upload is tenant-scoped in the UiPath CLI/Orchestrator model, so package publishing should be covered by a small tenant role.
+- Process creation/update, queues, queue items, and jobs are folder-scoped for this project and should be covered by a folder role assigned only on `Shared/UiPath`.
+- Suggested tenant role, for example `Python Function Package Publisher`:
+  - `Packages.View`
+  - `Packages.Create`
+  - `Folders.View`
+- Suggested folder role, for example `Python Function Deployer`, assigned on `Shared/UiPath`:
+  - `Processes.View`
+  - `Processes.Create`
+  - `Processes.Edit`
+  - `Queues.View`
+  - `Queues.Create`
+  - `Transactions.View`
+  - `Transactions.Create`
+  - `Jobs.View`
+  - `Jobs.Create`
+- If the deployment helper should create missing folders, add the relevant folder administration permissions at the tenant level. The GitHub Actions workflow currently assumes `Shared/UiPath` already exists.
+- The `uip or roles` CLI can create/edit roles. Assignment to the external app can always be done in Orchestrator UI; CLI assignment is possible if the external app appears as an assignable user/principal key in the tenant.
+
 ## Studio Web Sync
 
 - Added `UIPATH_PROJECT_ID=5e1e4253-8495-4d9b-ac47-41b773a0e886` to `.env`.

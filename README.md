@@ -1,5 +1,7 @@
 # Bare Minimum UiPath Python Function
 
+[![Deploy UiPath Python Function](https://github.com/ztan7912/bare-minimum/actions/workflows/deploy-uipath.yml/badge.svg?branch=main)](https://github.com/ztan7912/bare-minimum/actions/workflows/deploy-uipath.yml)
+
 Pure Python UiPath function that adds one item to Orchestrator queue `Test_Queue`.
 The queue item contains one custom field, `TimeAdded`, with the current UTC time.
 
@@ -86,7 +88,12 @@ For CI/CD, use a UiPath External Application and store values in GitHub Actions 
 
 In the External Apps UI, add Orchestrator API Access application scopes such as `OR.Execution`, `OR.Jobs`, `OR.Queues`, and `OR.Folders` if folder creation is needed. The CI token request uses `OR.Default`, which is requested at token time and resolved through Orchestrator role assignments.
 
-Assign the external app itself to the target tenant/folder with the minimum role needed. For this deployment helper, the app needs permissions to upload packages, create/update processes, create/read queues and queue items, and start/read jobs. If the helper should create folders, the app also needs folder administration permission at the tenant level; otherwise create `Shared/UiPath` once manually and omit `--create-missing-folder`.
+Assign the external app itself with least-privilege Orchestrator roles:
+
+- Tenant role, for package publishing and folder lookup: `Packages.View`, `Packages.Create`, and `Folders.View`.
+- Folder role on `Shared/UiPath`, for process and runtime work: `Processes.View`, `Processes.Create`, `Processes.Edit`, `Queues.View`, `Queues.Create`, `Transactions.View`, `Transactions.Create`, `Jobs.View`, and `Jobs.Create`.
+
+If the helper should create folders, the app also needs folder administration permission at the tenant level; otherwise create `Shared/UiPath` once manually and omit `--create-missing-folder`.
 
 Example non-interactive auth:
 
