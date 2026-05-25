@@ -64,9 +64,11 @@ For CI/CD, use a UiPath External Application and store values in GitHub Actions 
 - `UIPATH_URL`
 - `UIPATH_CLIENT_ID`
 - `UIPATH_CLIENT_SECRET`
-- `UIPATH_SCOPE`
+- `UIPATH_SCOPE` (optional; defaults to `OR.Default` in the workflow)
 
-Recommended token request scope for a fine-grained confidential app is `OR.Default`; assign the app itself to the target tenant/folder with the minimum role needed. For this deployment helper, the app needs permissions to upload packages, create/update processes, create/read queues and queue items, and start/read jobs. If the helper should create folders, the app also needs folder administration permission at the tenant level; otherwise create `Shared/UiPath` once manually and omit `--create-missing-folder`.
+In the External Apps UI, add Orchestrator API Access application scopes such as `OR.Execution`, `OR.Jobs`, `OR.Queues`, and `OR.Folders` if folder creation is needed. The CI token request uses `OR.Default`, which is requested at token time and resolved through Orchestrator role assignments.
+
+Assign the external app itself to the target tenant/folder with the minimum role needed. For this deployment helper, the app needs permissions to upload packages, create/update processes, create/read queues and queue items, and start/read jobs. If the helper should create folders, the app also needs folder administration permission at the tenant level; otherwise create `Shared/UiPath` once manually and omit `--create-missing-folder`.
 
 Example non-interactive auth:
 
@@ -79,3 +81,15 @@ Example non-interactive auth:
   --scope "$UIPATH_SCOPE"
 ```
 
+## GitHub Actions Deploy
+
+The repository includes `.github/workflows/deploy-uipath.yml`.
+
+Add these repository secrets:
+
+- `UIPATH_URL`: `https://cloud.uipath.com/ZhengTanTraining/ZhengTanTraining`
+- `UIPATH_CLIENT_ID`: external app application/client ID
+- `UIPATH_CLIENT_SECRET`: external app secret
+- `UIPATH_SCOPE`: optional, use `OR.Default`
+
+Then run **Actions > Deploy UiPath Python Function > Run workflow**.

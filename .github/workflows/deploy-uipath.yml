@@ -1,0 +1,56 @@
+name: Deploy UiPath Python Function
+
+on:
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    env:
+      UIPATH_URL: ${{ secrets.UIPATH_URL }}
+      UIPATH_CLIENT_ID: ${{ secrets.UIPATH_CLIENT_ID }}
+      UIPATH_CLIENT_SECRET: ${{ secrets.UIPATH_CLIENT_SECRET }}
+      UIPATH_SCOPE: ${{ secrets.UIPATH_SCOPE || 'OR.Default' }}
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: |
+          python -m venv .venv
+          .venv/bin/pip install --upgrade pip
+          .venv/bin/pip install "uipath>=2.10.70" python-dotenv httpx
+
+      - name: Authenticate to UiPath
+        run: |
+          .venv/bin/uipath auth \
+            --cloud \
+            --base-url "$UIPATH_URL" \
+            --client-id "$UIPATH_CLIENT_ID" \
+            --client-secret "$UIPATH_CLIENT_SECRET" \
+            --scope "$UIPATH_SCOPE"
+
+      - name: Build package
+        run: |
+          .venv/bin/uipath init --no-agents-md-override
+          .venv/bin/uipath pack --nolock
+
+      - name: Verify package and tests
+        run: |
+          .venv/bin/python scripts/verify_python_function_package.py
+          .venv/bin/python -m unittest discover -s tests
+
+      - name: Deploy and smoke test
+        run: |
+          .venv/bin/python scripts/deploy_and_verify.py \
+            --package .uipath/BareMinimumQueueTimeAdded.0.1.0.nupkg \
+            --update-existing-process \
+            --create-missing-queue \
+            --state-path .uipath/deploy-result-ci.json
+

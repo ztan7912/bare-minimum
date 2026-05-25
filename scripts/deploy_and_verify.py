@@ -53,7 +53,7 @@ def read_project() -> tuple[str, str]:
 
 class Orchestrator:
     def __init__(self) -> None:
-        load_dotenv(override=True)
+        load_dotenv(override=False)
         self.base_url = os.environ.get("UIPATH_URL", "").rstrip("/")
         token = os.environ.get("UIPATH_ACCESS_TOKEN")
         if not self.base_url or not token:
